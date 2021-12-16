@@ -22,6 +22,6 @@ app.use('/api/comments', commentRoute);
 app.use('/api/roles', rolesRoute);
 
 
-app.listen(5000, () => {
+app.listen(process.env.PORT || 5000, () => {
     console.log('Server is Running')
 });
