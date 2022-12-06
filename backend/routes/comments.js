@@ -27,7 +27,28 @@ router.get('/post/:id/:p', validInfo, async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 });
+router.get('/post/:id', validInfo, async (req, res) => {
+    try {
+        const userid = req.userid;
+        const postid = req.params.id;
+        const page = req.params.p;
+        const result = await pool.query(
+            `SELECT id FROM comments WHERE post_id = $1 AND parent_id IS NULL ORDER BY id DESC LIMIT $2 OFFSET $3`,
+            [postid, page*5, (page-1)*5]
+        )
+        const commentids = result.rows;
+        const more = !(result.rowCount < 5);
+        const comments = await Promise.all(commentids.map(async ({ id }) => await generateCommentObject(userid, id)));
+        res.json({
+            comments: comments,
+            more: more
+        })
 
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
 router.get('/comment/:id/:n', validInfo, async (req, res) => {
     try {
         const userid = req.userid;
